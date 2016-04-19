@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="helloWorldApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello world</title>
+    <script src="../Libraries/angular.js"></script>
+    <link href="../Libraries/bootstrap.css" rel="stylesheet" />
+    <link href="../Libraries/bootstrap-theme.css" rel="stylesheet" />
+
+    <script>
+        var model="Hello world";
+
+        var helloWorldApp=angular.module("helloWorldApp",[]);
+
+        helloWorldApp.controller("HelloWorldCtrl", function ($scope) {
+            $scope.message=model;
+
+            $scope.clickHundler=function () {
+                $scope.message=$scope.text;
+            }
+        })
+    </script>
+</head>
+<body ng-controller="HelloWorldCtrl">
+<h1>{{message}}</h1>
+<input ng-model="text" ng-keyup="clickHundler()">
+<button ng-click="clickHundler()">Обновить</button>
+</body>
+</html>
