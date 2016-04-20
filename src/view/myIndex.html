@@ -1,95 +1,79 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="coursesListApp">
+<html lang="en" ng-app="planoPlanApp">
 <head>
     <meta charset="UTF-8">
     <title>Course List</title>
     <script src="../Libraries/angular.js"></script>
-    <link href="../Libraries/bootstrap.css" rel="stylesheet" />
-    <link href="../Libraries/bootstrap-theme.css" rel="stylesheet" />
-
-    <script>
-        var model={
-            user: "User1",
-            courses: [
-                {name: "HTML, CSS",passed: true},
-                {name: "JS",passed: false},
-                {name: "RoR",passed: true}
-            ]
-        };
-
-        var courseListApp= angular.module("coursesListApp",[]);
-
-        courseListApp.controller("CourseListCtrl", function ($scope) {
-            $scope.data=model;
-
-            $scope.click=function () {
-                $scope.data.courses.push({
-                    name: $scope.text,
-                    passed: false
-
-                });
-
-                $scope.text="";
-
-            };
-            $scope.showText=function (passed){
-                return passed ? "Yes":"No"
-
-            };
-
-            $scope.setStyle=function (passed) {
-                return passed ? "color:green":"color:red"
-
-            };
-
-
-        });
-    </script>
+    <link href="../Libraries/bootstrap.css" rel="stylesheet"/>
+    <link href="../Libraries/bootstrap-theme.css" rel="stylesheet"/>
 </head>
 <body>
-<div class="container" ng-controller="CourseListCtrl">
+<script src="../Libraries/model.js"></script>
+<script src="../Libraries/controller.js"></script>
+<div class="container" ng-controller="RoomListCtrl">
     <div class="page-header">
         <div class="page-header">
-            <input type="checkbox"/>
             <h1>
-                Планировщик курсов.
+                Планировщик комнаты.
             </h1>
-            <h3>Пользователь: {{data.user}} Количество курсов - {{data.courses.length}}</h3>
+            <h3>Комната:{{data.room.name}} {{data.room.width}}x{{data.room.height}}. Количество мебели -
+                {{data.things.length}}</h3>
         </div>
     </div>
-    <div class="panel">
-        <div class="input-group">
-            <input class="form-control" ng-model="text" />
-                <span class="input-group-btn">
-                    <button class="btn btn-default" ng-click="click()">Добавить</button>
-                </span>
+    <div class="row">
+        <div class="col-xs-3">
+            <div class="input-group">
+                <span class="input-group-addon">Название:</span>
+                <input ng-model="text" type="text" class="form-control" placeholder="name" aria-describedby="sizing-addon1">
+            </div>
         </div>
-
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Course</th>
-                    <th></th>
-                    <th>Passed</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr ng-repeat="course in data.courses">
-                    <td>
-                        {{course.name}}
-                    </td>
-                    <td>
-                        <input type="checkbox" ng-model="course.passed"/>
-                    </td>
-                    <td>
-                        <span style="{{setStyle(course.padding)}}" >
-                            {{showText(course.passed)}}
-                        </span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="col-xs-2">
+            <div class="input-group">
+                <span class="input-group-addon">Ширина:</span>
+                <input type="text" class="form-control" placeholder="width" aria-describedby="sizing-addon1">
+            </div>
+        </div>
+        <div class="col-xs-2">
+            <div class="input-group">
+                <span class="input-group-addon">Длина:</span>
+                <input type="text" class="form-control " placeholder="height" aria-describedby="sizing-addon1">
+            </div>
+        </div>
+        <div class="col-xs-3">
+            <div class="input-group">
+                <span class="input-group-addon">Цвет:</span>
+                <input type="text" class="form-control" placeholder="color" aria-describedby="sizing-addon1">
+            </div>
+        </div>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="click()">Добавить</button>
+        </span>
     </div>
+<div class="col-md-4">
+    <table class="table table-hover ">
+        <thead>
+        <tr >
+            <th class="col-s-2">№</th>
+            <th class="col-s-1">Имя</th>
+            <th class="col-s-1">Ширина*Высота</th>
+        </tr>
+        </thead>
+        <tbody class="col-s-3">
+        <tr ng-repeat="thing in data.things">
+            <td class="col-s-3">
+                {{$index}}
+            </td>
+            <td class="col-s-3">
+                {{thing.name}}
+            </td>
+            <td class="col-s-1">
+                <input class="col-xs-5" type="text" placeholder="{{thing.width}}">
+                <input class="col-xs-5" type="text" placeholder="{{thing.heightL}}">
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
 </div>
 </body>
 </html>
