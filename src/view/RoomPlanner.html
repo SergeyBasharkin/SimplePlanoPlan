@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html ng-app="roomPlannerApp">
+<head>
+    <meta charset="utf-8">
+    <title>Планировщик комнаты</title>
+    <script src="../js/angular.js"></script>
+    <link href="../css/bootstrap.css" rel="stylesheet" />
+    <link href="../css/bootstrap-theme.css" rel="stylesheet" />
+    <link href="../css/room.css" rel="stylesheet" />
+    <script src="../js/mouseCoords.js" defer></script>
+
+    <script>
+        // Модель
+
+        var model = {
+            room: {name: 'Спальня', width: 300, height: 430, coordX: 1000 , coordY: 250},
+            things: [
+                { name: 'кровать', coordX: 0, coordY: 5, width: 100, height: 210, color: 'red'},
+                { name: 'шкаф', coordX: 0, coordY: 285, width: 140, height: 150, color: 'green'},
+                { name: 'стул', coordX: 0, coordY: 220, width: 40, height: 400, color: 'grey'},
+                { name: 'стол', coordX: 240, coordY: 5, width: 600, height: 120, color: 'brown'},
+                { name: 'диван', coordX: 220, coordY: 160, width: 30, height: 110, color: 'yellow'},
+                { name: 'дверь', coordX: 175, coordY: 425, width: 90, height: 5, color: 'blue'},
+                { name: 'окно', coordX: 90, coordY: 0, width: 130, height: 5, color: 'black'}
+            ]
+        };
+
+        // Модуль
+
+        var roomPlannerApp = angular.module("roomPlannerApp", []);
+
+        // Контроллер
+
+        roomPlannerApp.controller("roomPlannerCtrl", function ($scope) {
+
+            $scope.data = model;
+
+            // Обработчик нажатия по кнопке
+            $scope.addNewThing = function () {
+                $scope.data.things.push({
+                    name: $scope.thingName,
+                    coordX:0,
+                    coordY:0,
+                    width: $scope.thingWidth,
+                    height: $scope.thingHeight,
+                    color: $scope.thingColor
+                });
+
+                $scope.roomName = "";
+            };
+
+            $scope.removeThing = function(index) {
+              $scope.data.things.splice(index,1);
+            };
+            $scope.regexNumber = function(input) {
+//                if ( event.keyCode == 46 || event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 27 ||
+//                        (event.keyCode == 65 && event.ctrlKey === true) ||
+//                        (event.keyCode >= 35 && event.keyCode <= 39)) {
+//                    return;
+//                }
+//                else {
+//                    if ((event.keyCode < 48 || event.keyCode > 57) && (event.keyCode < 96 || event.keyCode > 105 )) {
+//                        event.preventDefault();
+//                    }
+//                }
+            };
+            $scope.fieldCoords = function() {
+                MouseCoords.getX();
+                MouseCoords.getY();
+            }
+        });
+    </script>
+
+</head>
+<body ng-controller="roomPlannerCtrl">
+<div class="container">
+    <div class="page-header">
+        <h1>
+            Планировщик комнаты.
+        </h1>
+        <h3>Комната: {{data.room.name}}. {{data.room.width}}x{{data.room.height}}. Количество мебели - {{data.things.length}}</h3>
+    </div>
+<div class="row" ng-mousemove="move(event)" ng-mouseup="free()">
+    <h4>Добавить мебель:</h4>
+    <form name="thingsForm" class="form-inline" >
+        <div class="form-group">
+            <label for="name1">Название: </label>
+            <input type="text" name="thingsName" class="form-control" id="name1" ng-model="thingName" placeholder="кровать" minlength="3" required>
+            <span ng-show="thingsForm.thingsName.$error.minlength">Мин 3 символа</span>
+        </div>
+        <div class="form-group">
+            <label for="name2">Ширина: </label>
+            <input type="number" name="thingsWidth" class="form-control" ng-keyup="" ng-change="regexNumber(this)" ng-model="thingWidth" id="name2" min="1" max="{{data.room.width}}"  placeholder="100" required>
+            <span ng-show="thingsForm.thingsWidth.$error.max">Нужно больше</span>
+            <span ng-show="thingsForm.thingsWidth.$error.max">OMG,Много(Нужно < {{data.room.width}})</span>
+        </div>
+        <div class="form-group">
+            <label for="name3">Длина: </label>
+            <input type="number" name="thingsHeight" min="1" max="{{data.room.height}}" class="form-control" ng-model="thingHeight" id="name3" placeholder="100" required>
+            <span ng-show="thingsForm.thingsWidth.$error.max">OMG,Много(Нужно < {{data.room.width}})</span>
+            <span ng-show="thingsForm.thingsHeight.$error.max">OMG,Много(Нужно < {{data.room.height}})</span>
+        </div>
+        <div class="form-group">
+            <label for="name4">Цвет: </label>
+            <input type="text" class="form-control" ng-model="thingColor" ng-init="thingColor='black'" id="name4">
+        </div>
+        <button type="submit" class="btn btn-default" ng-click="addNewThing()" ng-disabled="thingsForm.$invalid">Добавить</button>
+    </form>
+    <div class="row debug_message">
+        <div class="h4">Координаты мыши: X = ; Y =</div>
+    </div>
+    <div class="col-sm-6">
+    <div class="h4">Все вещи в комнате:</div>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>№</th>
+            <th>Имя</th>
+            <th>Координаты</th>
+            <th>Ширина*Высота</th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="thing in data.things">
+            <td>{{$index+1}}</td>
+            <td>{{thing.name}}</td>
+            <td>
+                X= {{thing.coordX}};
+                Y= {{thing.coordY}}
+            </td>
+            <!-- CheckBox чрез директиву ng-model связан со свойством passed -->
+            <td>
+                <div class="row">
+                    <div class="col-xs-5">
+                        <input type="number" ng-model="thing.width" ng-keydown="regexNumber($event)" class="form-control" value="{{thing.width}}">
+                    </div>
+                    <div class="col-xs-5">
+                        <input type="number" ng-model="thing.height" class="form-control" value="{{thing.height}}">
+                    </div>
+                </div>
+            </td>
+            <td>
+                <a data-ng-click="removeThing($index)">удалить</a>
+            </td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+    <div style="left: {{data.room.coordX}}px; top: {{data.room.coordY}}px; position: absolute">
+        <div style="width: {{data.room.width}}px; height:{{data.room.height}}px" class="main_field">
+            <div ng-repeat="thing in data.things" class="thing_css" style="width: {{thing.width}}px;height: {{thing.height}}px;background-color: {{thing.color}}" ng-mousedown="selectThing($index)">
+                {{thing.name}}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html ng-app="roomPlannerApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Планировщик комнаты</title>
+    <script src="../Libraries/angular.js"></script>
+    <script src="../js/mouseCoords.js"></script>
+    <link href="../Libraries/bootstrap.css" rel="stylesheet" />
+    <link href="../Libraries/bootstrap-theme.css" rel="stylesheet" />
+    <link href="../css/room.css" rel="stylesheet" />
+
+    <script>
+        // Модель
+
+        var model = {
+            room: {name: 'Спальня', width: 300, height: 430, coordX: 700 , coordY: 300},
+            things: [
+                { name: 'кровать', coordX: 0, coordY: 5, width: 100, height: 200, color: 'red'},
+                { name: 'шкаф', coordX: 0, coordY: 285, width: 140, height: 100, color: 'green'},
+                { name: 'стул', coordX: 0, coordY: 220, width: 40, height: 40, color: 'grey'},
+                { name: 'стол', coordX: 240, coordY: 5, width: 60, height: 120, color: 'brown'},
+                { name: 'диван', coordX: 220, coordY: 160, width: 30, height: 110, color: 'yellow'},
+                { name: 'дверь', coordX: 175, coordY: 425, width: 90, height: 5, color: 'blue'},
+                { name: 'окно', coordX: 90, coordY: 0, width: 130, height: 5, color: 'black'}
+            ]
+        };
+
+        var mouse={
+          coordX: 0,
+          coordy: 0
+        };
+
+        var MouseCoords = {
+            getX: function (e) {
+                if (e.pageX) {
+                    return e.pageX;
+                } else if (e.clientX) {
+                    return e.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft) - document.documentElement.clientLeft;
+                }
+                return 0;
+            },
+            getY: function (e) {
+                if (e.pageY) {
+                    return e.pageY;
+                } else if (e.clientY) {
+                    return e.clientY + (document.documentElement.scrollTop || document.body.scrollTop) - document.documentElement.clientTop;
+                }
+                return 0;
+            }
+        };
+        // Модуль
+
+        var roomPlannerApp = angular.module("roomPlannerApp", []);
+
+        // Контроллер
+
+        roomPlannerApp.controller("roomPlannerCtrl", function ($scope) {
+
+            $scope.data = model;
+            $scope.mouseXY=mouse;
+
+// Обработчик нажатия по кнопке
+            $scope.addNewThing = function () {
+                $scope.data.things.push({
+                    name: $scope.thingName,
+                    coordX:0,
+                    coordY:0,
+                    width: $scope.thingWidth,
+                    height: $scope.thingHeight,
+                    color: $scope.thingColor
+                });
+
+                $scope.roomName = "";
+            };
+
+//            $scope.changeValue=function (id) {
+//                var thing=$scope.data.things[id];
+//                if (thing.height> $scope.data.room.height||thing.height<1||thing.coordX+thing.width>$scope.data.room.width||thing.coordX+thing.height>$scope.data.room.height){
+//                    $scope.data.things[id].height=10;
+//                    $scope.text=50;
+//                }
+//                if (thing.width>$scope.data.room.width||thing.width<1||thing.coordX+thing.width>$scope.data.room.width||thing.coordY+thing.height>$scope.data.room.height){
+//                    $scope.data.things[id].width=50;
+//                    $scope.value=50;
+//                }
+//            }
+            $scope.mousemove=function (e) {
+                if (!e) e = window.event;
+                $scope.mouseXY.coordX=Number(MouseCoords.getX(e))-$scope.data.room.coordX;
+                $scope.mouseXY.coordy=Number(MouseCoords.getY(e))-$scope.data.room.coordY;
+            };
+
+            $scope.selectThing =function (e,id) {
+                var fieldScope=$scope.data.room;
+                var field=document.getElementById('move_field');
+                var elem=document.getElementById('thing'+id);
+                var elemScope=$scope.data.things[id];
+                var elId=id;
+
+                var elemCoords=getCoords(elem);
+                var shiftX=e.pageX-elemCoords.left;
+                var shiftY=e.pageY-elemCoords.top;
+
+                var fieldCoords=getCoords(field);
+                document.onmousemove=function (e) {
+                    var newX=e.pageX-shiftX -fieldCoords.left;
+                    var newY=e.pageY-shiftY-fieldCoords.top;
+                    if(newX<0){
+                        newX=0;
+                    }
+                    if(newY<0){
+                        newY=0;
+                    }
+                    var rightEdge=field.offsetWidth-elem.offsetWidth;
+                    var topEdge=field.offsetHeight-elem.offsetHeight;
+                    if(newX>rightEdge){
+                        newX=rightEdge;
+                    }
+                    if(newY>topEdge){
+                        newY=topEdge;
+                    }
+                    $scope.data.things[elId].coordX=newX;
+                    $scope.data.things[elId].coordY=newY;
+//                    elem.style.left = newX + 'px';
+                };
+
+                return false; // disable selection start (cursor change)
+
+                function getCoords(elem) { // кроме IE8-
+                    var box = elem.getBoundingClientRect();
+
+                    return {
+                        top: box.top + pageYOffset,
+                        left: box.left + pageXOffset
+                    };
+
+                }
+            };
+            $scope.free=function (e) {
+                document.onmouseup=document.onmousemove=null;
+            };
+            $scope.removeThing = function(index) {
+                $scope.data.things.splice(index,1);
+            };
+
+        });
+    </script>
+
+</head>
+<body ng-controller="roomPlannerCtrl" ng-mousemove="mousemove(event)">
+<div class="container">
+    <div class="page-header">
+        <h1>
+            Планировщик комнаты.
+        </h1>
+        <h3>Комната: {{data.room.name}}. {{data.room.width}}x{{data.room.height}}. Количество мебели - {{data.things.length}}</h3>
+    </div>
+    <div class="row" ng-mousemove="move(event)" ng-mouseup="free()">
+        <h4>Добавить мебель:</h4>
+        <form class="form-inline" name="thingsForm" >
+            <span ng-show="thingsForm.thingsName.$error.minlength">Мин 3 символа</span>
+            <div class="form-group">
+                <label for="name1">Название: </label>
+                <input type="text" class="form-control" name="thingsName" id="name1" ng-model="thingName" minlength="3" placeholder="кровать" required>
+            </div>
+            <span ng-show="thingsForm.thingsWidth.$error.max">Нужно больше</span>
+            <span ng-show="thingsForm.thingsWidth.$error.max">{{data.room.width}})</span>
+            <div class="form-group">
+                <label for="name2">Ширина: </label>
+                <input type="number" class="form-control" name="thingsWidth" ng-model="thingWidth" id="name2" min="1" max="{{data.room.width}}" placeholder="100" required>
+            </div>
+            <span ng-show="thingsForm.thingsWidth.$error.max">{{data.room.width}})</span>
+            <span ng-show="thingsForm.thingsHeight.$error.max">{{data.room.height}})</span>
+            <div class="form-group">
+                <label for="name3">Длина: </label>
+                <input type="number" class="form-control" name="thingsHeight" ng-model="thingHeight" id="name3" placeholder="100" min="1" max="{{data.room.width}}" required>
+            </div>
+            <div class="form-group">
+                <label for="name4">Цвет: </label>
+                <input type="text" class="form-control" ng-model="thingColor" id="name4" ng-init="thingColor='black'">
+            </div>
+            <button type="submit" class="btn btn-default" ng-click="addNewThing()" ng-disabled="thingsForm.$invalid">Добавить</button>
+        </form>
+        <div class="row debug_message">
+            <div class="h4">Координаты мыши: X = {{mouseXY.coordX}}; Y = {{mouseXY.coordy}}</div>
+        </div>
+        <div class="col-sm-6">
+            <div class="h4">Все вещи в комнате:</div>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Имя</th>
+                    <th>Координаты</th>
+                    <th>Ширина*Высота</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="thing in data.things">
+                    <td>{{$index+1}}</td>
+                    <td>{{thing.name}}</td>
+                    <td>
+                        X= {{thing.coordX}};
+                        Y= {{thing.coordY}}
+                    </td>
+                    <!— CheckBox чрез директиву ng-model связан со свойством passed —>
+                    <td>
+                        <div class="row">
+                            <div class="col-xs-5">
+                                <input type="number" ng-model="thing.width" class="form-control" ng-keypress="changeValue($index)" ng-click="changeValue($index)" min="1" max="{{data.room.width-thing.coordX}}">
+                            </div>
+                            <div class="col-xs-5">
+                                <input type="number" ng-model="thing.height" class="form-control" ng-keypress="changeValue($index)" min="1" max="{{data.room.height-thing.coordY}}">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a data-ng-click="removeThing($index)">удалить</a>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+            <div style="width: {{data.room.width}}px; height:{{data.room.height}}px; left: {{data.room.coordX}}px; top: {{data.room.coordY}}px; position: absolute;" id="move_field" class="main_field">
+                <div ng-repeat="thing in data.things" class="thing_css" style="width: {{thing.width}}px;height: {{thing.height}}px;background-color:
+{{thing.color}}; position: absolute; left: {{thing.coordX}}px; top: {{thing.coordY}}px;" ng-mousedown="selectThing($event,$index)" ng-mouseup="free()" id="thing{{$index}}">
+                    {{thing.name}}
+                </div>
+            </div>
+        </div>
+</div>
+</body>
+</html>
